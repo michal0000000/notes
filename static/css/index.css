@@ -1,0 +1,57 @@
+.workspace-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    height: 100%;
+    overflow: hidden;
+}
+
+.full-h {
+    height: 100%;
+}
+
+.side-panel {
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: 50px;
+    background-color: #03045E;
+}
+
+.file-browser {
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: 250px;
+    border-right: #1F1D20 1px solid;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.notes-wrapper {
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: auto;
+    margin:10px
+}
+
+.menu-header {
+    color:#FFF;
+    position: relative;
+    top: 3%;
+    align-self: center;
+    text-align: center;
+    font-size: large;
+}
+
+.browser-wrapper{
+    height: 70px;
+    border-bottom: #1F1D20 1px solid;
+}
+
+.browser-header {
+    color:#1F1D20;
+    align-self: center;
+    text-align: center;
+    font-size: 40px;
+}
