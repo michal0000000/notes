@@ -24,17 +24,28 @@
 
                 <div class="file-list">
 
-                    <div class="browser-file-item">
-                        <div>Random Notes</div>
+                    <div id="add-note" class="add-note">
+                        <span>New Note</span>
                     </div>
 
-                    <div class="browser-file-item">
-                        <div>Work</div>
+                    <div class="notes-list">
+                        <div class="browser-file-item">
+                            <span class="note-name">Random Notes</span>
+                            <span class="node-id" hidden>123</span> 
+                        </div>
+    
+                        <div class="browser-file-item">
+                            <span class="note-name">Work</span> 
+                            <span class="node-id" hidden>456</span> 
+                        </div>
+    
+                        <div class="browser-file-item">
+                            <span class="note-name">Blog Ideas</span> 
+                            <span class="node-id" hidden>789</span> 
+                        </div>
                     </div>
 
-                    <div class="browser-file-item">
-                        <div>Blog ideas</div>
-                    </div>
+                    
 
                 </div>
 
@@ -42,12 +53,22 @@
 
             <div class="notes-wrapper full-h">
 
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Cupiditate voluptatem, labore beatae soluta exercitationem odio impedit quos corporis, quibusdam corrupti accusantium sapiente fuga error fugiat? Doloribus fuga alias totam facilis.</p>
+                <div id="toolbar">
+                    <button id="boldBtn">Bold</button>
+                    <button id="italicBtn">Italic</button>
+                    <!-- Add more buttons for more features -->
+                </div>
+
+                <div id=editor contenteditable="true">
+                    <p>Wherever your fingers take you...</p>
+                </div>
 
             </div>
 
         </div>
-
-
     </body>
+
+    <footer>
+        <script src="js/notes.js"></script>
+    </footer>
 </html>

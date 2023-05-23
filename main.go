@@ -1,7 +1,11 @@
 package main
 
 import (
-	"github.com/gofiber/fiber/v2" // add Fiber package
+	"encoding/json"
+
+	utils "notes/src"
+
+	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/template/pug"
 )
 
@@ -9,15 +13,14 @@ func main() {
 	// Initialize Pug template engine in ./views folder
 	engine := pug.New("./views", ".html")
 
-	// Create a new Fiber instance
+	// Create a new Fiber instancse
 	app := fiber.New(fiber.Config{
 		Views: engine, // set template engine for rendering
 	})
 
-	app.Static(
-		"/css",         // mount address
-		"./static/css", // path to the file folder
-	)
+	// mount // path to folder
+	app.Static("/css", "./static/css")
+	app.Static("/js", "./static/js")
 
 	// Create a new endpoint
 	app.Get("/", func(c *fiber.Ctx) error {
@@ -27,10 +30,22 @@ func main() {
 		})
 	})
 
-	// Endpoint for Post method
-	app.Post("/", func(c *fiber.Ctx) error {
+	app.Post("/save", func(c *fiber.Ctx) error {
 		// function that stores a new data
 		return nil
+	})
+
+	app.Post("/new_note", func(c *fiber.Ctx) error {
+		newNote := utils.Note{
+			Id:      2342,
+			Header:  "Quotes",
+			Content: "<h2>I am not the body, I am not even the mind</h2>",
+		}
+		n, err := json.Marshal(newNote)
+		if err != nil {
+			panic(err)
+		}
+		return c.JSON(string(n))
 	})
 
 	// Endpoint for PUT method
