@@ -1,11 +1,9 @@
 package utils
 
-import (
-	"fmt"
-)
+import "log"
 
-func checkErr(err error) {
+func CheckErr(msg string, err error) {
 	if err != nil {
-		fmt.Println(err)
+		log.Printf(msg+": %s\n", err)
 	}
 }

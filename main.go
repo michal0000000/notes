@@ -1,17 +1,32 @@
 package main
 
 import (
-	"encoding/json"
-
+	"database/sql"
+	"log"
 	utils "notes/src"
+	"os"
+	"strconv"
+
+	"github.com/gofiber/template/html"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/template/pug"
+	"github.com/gofiber/fiber/v2/middleware/redirect"
 )
 
+func init() {
+	// Set log output
+	log.SetOutput(os.Stdout)
+
+	// Initialize database
+	db, err := sql.Open("sqlite3", "./notes.db")
+	utils.CheckErr("Failed to initialize DB in init", err)
+	utils.CreateInitialDatabase(db)
+}
+
 func main() {
+
 	// Initialize Pug template engine in ./views folder
-	engine := pug.New("./views", ".html")
+	engine := html.New("./views", ".html")
 
 	// Create a new Fiber instancse
 	app := fiber.New(fiber.Config{
@@ -22,30 +37,61 @@ func main() {
 	app.Static("/css", "./static/css")
 	app.Static("/js", "./static/js")
 
-	// Create a new endpoint
-	app.Get("/", func(c *fiber.Ctx) error {
-		// rendering the "index" template with content passing
-		return c.Render("index", fiber.Map{
-			//...
+	// Initialize database
+	db, err := sql.Open("sqlite3", "./notes.db")
+	utils.CheckErr("Failed to initialize DB", err)
+
+	// Initilize notes array
+	allNotes := make(map[int64]utils.Note, 10)
+
+	// Save current note content
+	app.Post("/save", func(c *fiber.Ctx) error {
+		c.Accepts("application/json")
+
+		return c.JSON(fiber.Map{
+			"message": "success",
 		})
 	})
 
-	app.Post("/save", func(c *fiber.Ctx) error {
-		// function that stores a new data
-		return nil
+	app.Get("/new_note", func(c *fiber.Ctx) error {
+		newNote := utils.Note{
+			Id:      utils.CreateNewNote(db, "Untitled"),
+			Title:   "Untitled",
+			Content: "",
+		}
+		return c.JSON(newNote)
 	})
 
-	app.Post("/new_note", func(c *fiber.Ctx) error {
-		newNote := utils.Note{
-			Id:      2342,
-			Header:  "Quotes",
-			Content: "<h2>I am not the body, I am not even the mind</h2>",
-		}
-		n, err := json.Marshal(newNote)
+	app.Use(redirect.New(redirect.Config{
+		Rules: map[string]string{
+			"/": "/:noteId",
+		},
+		StatusCode: 301,
+	}))
+
+	app.Get("/:noteId", func(c *fiber.Ctx) error {
+
+		// Fetch first 10 Notes
+		utils.FetchNotes(db, allNotes, 10)
+
+		// Fetch content of selected noteId
+		noteId, err := strconv.ParseInt(c.Params("noteId"), 10, 64)
 		if err != nil {
-			panic(err)
+			utils.CheckErr("invalid nodeId", err)
+			// TODO: redirect to '/'
 		}
-		return c.JSON(string(n))
+
+		selectedNote, err := utils.FetchSingleNote(db, allNotes, noteId)
+		if err != nil {
+			utils.CheckErr("couldnt retrieve note content", err)
+			// TODO: redirect to '/'
+		}
+
+		// rendering the "index" template with content passing
+		return c.Render("index", fiber.Map{
+			"AllNotes":     allNotes,
+			"SelectedNote": selectedNote,
+		})
 	})
 
 	// Endpoint for PUT method

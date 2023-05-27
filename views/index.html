@@ -1,3 +1,4 @@
+{{ define "index" }}
 <html DOCTYPE="UTF-8">
     <head>
 
@@ -29,23 +30,16 @@
                     </div>
 
                     <div class="notes-list">
-                        <div class="browser-file-item">
-                            <span class="note-name">Random Notes</span>
-                            <span class="node-id" hidden>123</span> 
-                        </div>
-    
-                        <div class="browser-file-item">
-                            <span class="note-name">Work</span> 
-                            <span class="node-id" hidden>456</span> 
-                        </div>
-    
-                        <div class="browser-file-item">
-                            <span class="note-name">Blog Ideas</span> 
-                            <span class="node-id" hidden>789</span> 
-                        </div>
-                    </div>
 
-                    
+                        {{ range .AllNotes }}
+                            <a href="{{.Id}}">
+                                <div class="browser-file-item">
+                                    <span class="note-name">{{.Title}}</span>
+                                </div>
+                            </a>
+                        {{ end }}
+
+                    </div>
 
                 </div>
 
@@ -60,7 +54,11 @@
                 </div>
 
                 <div id=editor contenteditable="true">
-                    <p>Wherever your fingers take you...</p>
+                    {{ if eq .SelectedNote "" }}
+                        <p>Wherever your fingers take you...</p>
+                    {{ else }}
+                        {{ .SelectedNote }}
+                    {{ end }}
                 </div>
 
             </div>
@@ -72,3 +70,4 @@
         <script src="js/notes.js"></script>
     </footer>
 </html>
+{{ end }}

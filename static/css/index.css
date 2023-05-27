@@ -81,3 +81,7 @@
 .add-note:hover {
     background-color: grey;
 }
+
+.browser-file-item:hover {
+    background-color: #bfbfbf;
+}

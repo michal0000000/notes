@@ -21,6 +21,8 @@ document.getElementById('italicBtn').addEventListener('click', function() {
     toggleFormat("i");
 });
 
+
+// Save current state of note
 setInterval(() => {
     const editorContent = document.getElementById('editor').innerHTML;
     const data = JSON.stringify({content: editorContent});
@@ -46,28 +48,37 @@ document.getElementById('add-note').addEventListener('click', function() {
 });
 
 function createNewNote() {
+    // Fetch new note
     fetch('/new_note', {
-        method: 'POST',
+        method: 'GET',
         headers: {
             'Content-Type': 'application/json',
         }
     })
     .then((response) => response.json())
     .then((data) => {
+
+        // Create new single note element for notes list
         const note_wrapper = document.createElement('div')
         note_wrapper.classList.add('browser-file-item')
         const new_note = document.createElement('span')
         new_note.classList.add('note-name')
-        const node_id = document.createElement('span')
+        const note_id = document.createElement('span')
         note_id.classList.add('note-id')
 
-        new_note.textContent = 'Untitled'
-        note_id.textContent = data['noteId']
+        // Fill single note element with data from response
+        //json_data = JSON.parse(data)
+        new_note.textContent = data['Title']
+        note_id.textContent = data['Id']
         note_id.hidden = true
 
+        // Build element
         note_wrapper.appendChild(new_note)
         note_wrapper.appendChild(note_id)
         notes_list = document.getElementsByClassName('notes-list')
-        notes_list.prepend(note_wrapper)
+
+        // Insert on top of notes list
+        notes_list[0].insertBefore(note_wrapper,notes_list[0].firstChild)
+        
     })
 }
