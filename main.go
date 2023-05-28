@@ -19,6 +19,7 @@ func init() {
 
 	// Initialize database
 	db, err := sql.Open("sqlite3", "./notes.db")
+	defer db.Close()
 	utils.CheckErr("Failed to initialize DB in init", err)
 	utils.CreateInitialDatabase(db)
 }
@@ -36,33 +37,58 @@ func main() {
 	// mount // path to folder
 	app.Static("/css", "./static/css")
 	app.Static("/js", "./static/js")
+	app.Static("/img", "./static/img")
 
 	// Initialize database
 	db, err := sql.Open("sqlite3", "./notes.db")
+	defer db.Close()
 	utils.CheckErr("Failed to initialize DB", err)
 
 	// Initilize notes array
 	allNotes := make(map[int64]utils.Note, 10)
 
 	// Save current note content
-	app.Post("/save", func(c *fiber.Ctx) error {
+	app.Put("/save", func(c *fiber.Ctx) error {
 		c.Accepts("application/json")
+
+		// Parse current note state from request data
+		currentNoteState := new(utils.NoteState)
+		err := c.BodyParser(currentNoteState)
+		utils.CheckErr("could not parse note state", err)
+		if err != nil {
+			return c.JSON(fiber.Map{
+				"message": "failed to update note",
+			})
+		}
+
+		utils.UpdateNote(db, currentNoteState)
 
 		return c.JSON(fiber.Map{
 			"message": "success",
 		})
 	})
 
+	// Creat new note
 	app.Get("/new_note", func(c *fiber.Ctx) error {
+
+		newNoteId, err := utils.CreateNewNote(db, "Untitled")
+		if err != nil {
+			return c.JSON(fiber.Map{
+				"message": "failed to create new note",
+			})
+		}
+
 		newNote := utils.Note{
-			Id:      utils.CreateNewNote(db, "Untitled"),
+			Id:      newNoteId,
 			Title:   "Untitled",
 			Content: "",
 		}
 		return c.JSON(newNote)
 	})
 
+	// Redirect root to some specific note
 	app.Use(redirect.New(redirect.Config{
+		// TODO: doesnt work
 		Rules: map[string]string{
 			"/": "/:noteId",
 		},
@@ -94,22 +120,25 @@ func main() {
 		})
 	})
 
-	// Endpoint for PUT method
-	app.Put("/", func(c *fiber.Ctx) error {
-		// function that replaces the existing data
-		return nil
-	})
-
-	// Endpoint for PATCH method
-	app.Patch("/", func(c *fiber.Ctx) error {
-		// function that replaces part of the existing data
-		return nil
-	})
-
 	// Endpoint for DELETE method
-	app.Delete("/", func(c *fiber.Ctx) error {
-		// function that deletes the data
-		return nil
+	app.Delete("/delete", func(c *fiber.Ctx) error {
+		c.Accepts("application/json")
+
+		// Parse current note state from request data
+		noteToDelete := new(utils.NoteState)
+		err := c.BodyParser(noteToDelete)
+		utils.CheckErr("could not parse note to delete", err)
+		if err != nil {
+			return c.JSON(fiber.Map{
+				"message": "failed to delete note",
+			})
+		}
+
+		utils.DeleteNote(db, noteToDelete)
+
+		return c.JSON(fiber.Map{
+			"message": "success",
+		})
 	})
 
 	// Start server on port 3000

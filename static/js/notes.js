@@ -21,27 +21,15 @@ document.getElementById('italicBtn').addEventListener('click', function() {
     toggleFormat("i");
 });
 
-
-// Save current state of note
-setInterval(() => {
-    const editorContent = document.getElementById('editor').innerHTML;
-    const data = JSON.stringify({content: editorContent});
-
-    fetch('/save', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: data,
-    })
-    .then((response) => response.json())
-    .then((data) => {
-        console.log('Success:', data);
-    })
-    .catch((error) => {
-        console.error('Error:', error);
+// Save note on keypress
+document.addEventListener('keydown', function(event) {
+    if (event.ctrlKey && event.key === 's') {
+        saveNoteState();
+        }
     });
-}, 5000); // Save every 5 seconds
+
+// Save current state of note every 5 sec
+setInterval(() => {saveNoteState();}, 5000); // Save every 5 seconds
 
 document.getElementById('add-note').addEventListener('click', function() {
     createNewNote();
@@ -81,4 +69,60 @@ function createNewNote() {
         notes_list[0].insertBefore(note_wrapper,notes_list[0].firstChild)
         
     })
+}
+
+function parseNoteIdFromUrl(url) {
+    const regex = /\/([^\/]+)$/;
+    const match = url.match(regex);
+    
+    if (match && match.length > 1) {
+      return match[1];
+    }
+    
+    return null;
+  }
+
+function saveNoteState() {
+    const editorContent = document.getElementById('editor').innerHTML;
+    const currentUrl = window.location.href;
+    const noteId = parseNoteIdFromUrl(currentUrl)
+    const data = JSON.stringify({noteId: noteId, content: editorContent});
+
+    fetch('/save', {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: data,
+    })
+    .then((response) => response.json())
+    .then((data) => {
+        console.log('Success:', data);
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+}
+
+// Delete note
+function deleteNote() {
+    // TODO: Remove note from note list
+
+    const currentUrl = window.location.href;
+    noteId = parseNoteIdFromUrl(currentUrl);
+    const data = JSON.stringify({noteId: noteId, content: ''});
+    fetch('/delete', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: data,
+    })
+    .then((response) => response.json())
+    .then((data) => {
+        console.log('Success:', data);
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
 }

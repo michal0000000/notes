@@ -10,6 +10,11 @@ type Note struct {
 	Content string
 }
 
+type NoteState struct {
+	Id      string `json:"noteId"`
+	Content string `json:"content"`
+}
+
 func FetchNotes(db *sql.DB, allNotes map[int64]Note, amount int) int {
 	// Query first 10 notes
 	// Select only Id,Title to optimize performance

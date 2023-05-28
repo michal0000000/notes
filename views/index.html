@@ -35,6 +35,8 @@
                             <a href="{{.Id}}">
                                 <div class="browser-file-item">
                                     <span class="note-name">{{.Title}}</span>
+                                    <div onclick="deleteNote()"><img src="img/trash-24.png" alt="delete note"></div>
+                                    <span class="note-id" hidden>{{.Id}}</span>
                                 </div>
                             </a>
                         {{ end }}
