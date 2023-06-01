@@ -35,7 +35,7 @@
                             <a href="{{.Id}}">
                                 <div class="browser-file-item">
                                     <span class="note-name">{{.Title}}</span>
-                                    <div onclick="deleteNote()"><img src="img/trash-24.png" alt="delete note"></div>
+                                    <span onclick="deleteNote()"><img src="img/trash-24.png" alt="delete note"></span>
                                     <span class="note-id" hidden>{{.Id}}</span>
                                 </div>
                             </a>
@@ -50,9 +50,44 @@
             <div class="notes-wrapper full-h">
 
                 <div id="toolbar">
-                    <button id="boldBtn">Bold</button>
-                    <button id="italicBtn">Italic</button>
-                    <!-- Add more buttons for more features -->
+
+                    <button type= "button" class="btn" data-element= "bold">
+                    <i class="fa fa-bold"></i></i>
+                    </button>
+                    <button type="button" class="btn" data-element="italic">
+                    <i class="fa fa-italic"></i>
+                    </button>
+                    <button type="button" class="btn" data-element="underline">
+                    <i class="fa fa-underline"></i>
+                    </button>
+                    <button type="button" class="btn" data-element="insertUnorderedList">
+                    <i class="fa fa-list-ul"></i>
+                    </button>
+                    <button type="button" class="btn" data-element="insertorderedList">
+                        <i class="fa fa-list-ol"></i>
+                    </button>
+                    <button type="button" class= "btn" data-element="createLink">
+                        <i class="fa fa-link"></i>
+                    </button>
+                    <button type="button" class="btn" data-element="insertImage">
+                        <i class="fa fa-bold"></i>
+                    </button>
+                    
+                    <!--
+                    <button type="button" class="btn" data-element="justifyLeft">
+                    <i class="fa fa-align-left"></i>
+                    </button>
+                    <button type="button" class="btn" data-element="justifycenter">
+                    <i class="fa fa-align-center"></i>
+                    </button>
+                    <button type="button" class="btn" data-element="justifyRight">
+                    </button>
+                    <i class="fa fa-align-right"></i>
+                    </button>
+                    <button type="button" class="btn" data-element="justifyFull">
+                    <i class="fa fa-align-justify"></i>
+                    </button>
+                    -->
                 </div>
 
                 <div id=editor contenteditable="true">
@@ -70,6 +105,7 @@
 
     <footer>
         <script src="js/notes.js"></script>
+        <script src="js/fontawesome.js"></script>
     </footer>
 </html>
 {{ end }}

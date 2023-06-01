@@ -13,13 +13,28 @@ function toggleFormat(command) {
     } 
 }
 
+/*
+
 document.getElementById('boldBtn').addEventListener('click', function() {
     toggleFormat("b");
 });
 
 document.getElementById('italicBtn').addEventListener('click', function() {
     toggleFormat("i");
-});
+});*/
+
+const elements = document.querySelectorAll(".btn")
+elements.forEach(element => {
+    element.addEventListener("click", () => {
+        let command = element.dataset['element']
+        if (command == "bold") { toggleFormat("b") };
+        if (command == "italic") { toggleFormat("i") };
+        if (command == "underline") { toggleFormat("u") };
+    })
+})
+
+
+/* Server functionality below */
 
 // Save note on keypress
 document.addEventListener('keydown', function(event) {
@@ -53,6 +68,9 @@ function createNewNote() {
         new_note.classList.add('note-name')
         const note_id = document.createElement('span')
         note_id.classList.add('note-id')
+
+        /* TODO: add trashbin and new note link */
+        const tash_span = document.createElement("span")
 
         // Fill single note element with data from response
         //json_data = JSON.parse(data)
