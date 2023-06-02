@@ -5,10 +5,41 @@ function toggleFormat(command) {
         if (sel.rangeCount) {
             range = sel.getRangeAt(0);
             var selectedText = range.toString();
-            var newNode = document.createElement("span");
-            newNode.innerHTML = "<" + command + ">" + selectedText + "</" + command + ">";
+            var newNode = document.createElement(command);
+            var nodeText = document.createTextNode(selectedText)
+            newNode.appendChild(nodeText)
+            //newNode.innerHTML = "<" + command + ">" + selectedText + "</" + command + ">";
             range.deleteContents();
             range.insertNode(newNode);
+        }
+    } 
+}
+
+function toggleList(listType) {
+    var sel, range;
+    if (window.getSelection) {
+        sel = window.getSelection();
+        if (sel.rangeCount > 0) {
+            range = sel.getRangeAt(0);
+
+            const selectedElements = range.commonAncestorContainer.querySelectorAll('p');
+            
+            var newList = document.createElement(listType);
+            selectedElements.forEach((divElement) => {
+                const li = document.createElement('li');
+            
+                const fragment = document.createDocumentFragment();
+                while (divElement.firstChild) {
+                    const childNode = divElement.firstChild;
+                    fragment.appendChild(childNode);
+                }
+
+                li.appendChild(fragment)
+                newList.appendChild(li)
+            });
+
+            range.deleteContents()
+            range.insertNode(newList)
         }
     } 
 }
@@ -30,6 +61,8 @@ elements.forEach(element => {
         if (command == "bold") { toggleFormat("b") };
         if (command == "italic") { toggleFormat("i") };
         if (command == "underline") { toggleFormat("u") };
+        if (command == "insertUnorderedList") { toggleList("ul") };
+        if (command == "insertorderedList") { toggleList("ol") };
     })
 })
 
@@ -49,6 +82,7 @@ setInterval(() => {saveNoteState();}, 5000); // Save every 5 seconds
 document.getElementById('add-note').addEventListener('click', function() {
     createNewNote();
 });
+
 
 function createNewNote() {
     // Fetch new note
@@ -70,7 +104,12 @@ function createNewNote() {
         note_id.classList.add('note-id')
 
         /* TODO: add trashbin and new note link */
-        const tash_span = document.createElement("span")
+        const trash_span = document.createElement("span")
+        trash_span.onclick(deleteNote(data['Id']))
+        const trash_img = document.createElement("img")
+        trash_img.src = "img/trash-24.png"
+        trash_img.alt = "delete note"
+        trash_span.appendChild(trash_img)
 
         // Fill single note element with data from response
         //json_data = JSON.parse(data)
@@ -80,6 +119,7 @@ function createNewNote() {
 
         // Build element
         note_wrapper.appendChild(new_note)
+        note_wrapper.appendChild(trash_span)
         note_wrapper.appendChild(note_id)
         notes_list = document.getElementsByClassName('notes-list')
 
@@ -104,7 +144,9 @@ function saveNoteState() {
     const editorContent = document.getElementById('editor').innerHTML;
     const currentUrl = window.location.href;
     const noteId = parseNoteIdFromUrl(currentUrl)
-    const data = JSON.stringify({noteId: noteId, content: editorContent});
+    const data = JSON.stringify({noteId: parseInt(noteId), content: editorContent});
+
+    console.log("SAVING DATA: " + data)
 
     fetch('/save', {
         method: 'PUT',
@@ -113,34 +155,31 @@ function saveNoteState() {
         },
         body: data,
     })
-    .then((response) => response.json())
-    .then((data) => {
-        console.log('Success:', data);
-    })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
+    .then((response) => response.json());
 }
 
 // Delete note
-function deleteNote() {
+function deleteNote(noteId) {
     // TODO: Remove note from note list
 
-    const currentUrl = window.location.href;
-    noteId = parseNoteIdFromUrl(currentUrl);
+    //const currentUrl = window.location.href;
+    //noteId = parseNoteIdFromUrl(currentUrl);
     const data = JSON.stringify({noteId: noteId, content: ''});
-    fetch('/delete', {
-        method: 'DELETE',
+    fetch('/' + noteId + '/delete', {
+        method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: data,
+        //body: data,
     })
     .then((response) => response.json())
     .then((data) => {
-        console.log('Success:', data);
+        console.log('Deletion Success:', data);
+
+        if (data['message'] == 'ok'){
+        }
     })
     .catch((error) => {
-        console.error('Error:', error);
+        console.error('Deletion Error:', error);
     });
 }

@@ -2,7 +2,9 @@ package utils
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
+	"strconv"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -30,34 +32,46 @@ func CreateNewNote(db *sql.DB, title string) (int64, error) {
 	return noteID, err
 }
 
+func FetchYoungestNote(db *sql.DB) string {
+	rows, err := db.Query("SELECT MAX(id) FROM notes LIMIT 1")
+	if err != nil {
+		CheckErr("failed to fetch notes", err)
+		return "0"
+	}
+	defer rows.Close()
+
+	var youngestId *string
+	for rows.Next() {
+		err := rows.Scan(&youngestId)
+		if err != nil {
+			CheckErr("failed to scan note", err)
+			return "0"
+		}
+	}
+	fmt.Printf("PreWawa: %s", *youngestId)
+	return *youngestId
+}
+
 func UpdateNote(db *sql.DB, noteState *NoteState) error {
 
 	// Prepare query
-	updateSQL, err := db.Prepare("UPDATE notes SET content=? where id=?")
+	stmt, err := db.Prepare("UPDATE notes SET content=? WHERE id=?")
 	if err != nil {
 		CheckErr("Couldnt update note (1)", err)
 		return err
 	}
-	// Start transaction
-	tx, err := db.Begin()
-	if err != nil {
-		CheckErr("Couldnt update note (2)", err)
-		return err
-	}
 
 	// Execute transaction
-	_, err = tx.Stmt(updateSQL).Exec(noteState.Content, noteState.Id)
+	res, err := stmt.Exec(noteState.Content, int(noteState.Id))
 
 	// Handle errors
 	if err != nil {
 		CheckErr("Couldnt update note (3)", err)
-		log.Println("Doing rollback")
-		tx.Rollback()
 		return err
-	} else {
-		tx.Commit()
 	}
 
+	affected, _ := res.RowsAffected()
+	fmt.Printf("SAVED! %d\n", affected)
 	return nil
 }
 
@@ -73,6 +87,27 @@ func DeleteNote(db *sql.DB, noteState *NoteState) error {
 
 	// Execute query
 	_, err = stmt.Exec(noteState.Id)
+	if err != nil {
+		CheckErr("Couldnt delete note (2)", err)
+		return err
+	}
+
+	return err
+}
+
+// Delete note
+func DeleteNoteStr(db *sql.DB, noteToDelete string) error {
+
+	// Prepare query
+	stmt, err := db.Prepare("DELETE FROM notes WHERE id=?")
+	if err != nil {
+		CheckErr("Couldnt delete note (1)", err)
+		return err
+	}
+
+	// Execute query
+	noteId, _ := strconv.Atoi(noteToDelete)
+	_, err = stmt.Exec(noteId)
 	if err != nil {
 		CheckErr("Couldnt delete note (2)", err)
 		return err

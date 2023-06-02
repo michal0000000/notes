@@ -32,13 +32,13 @@
                     <div class="notes-list">
 
                         {{ range .AllNotes }}
-                            <a href="{{.Id}}">
-                                <div class="browser-file-item">
+                            <div class="browser-file-item">
+                                <a href="{{.Id}}">
                                     <span class="note-name">{{.Title}}</span>
-                                    <span onclick="deleteNote()"><img src="img/trash-24.png" alt="delete note"></span>
                                     <span class="note-id" hidden>{{.Id}}</span>
-                                </div>
-                            </a>
+                                </a>
+                                <span onclick="deleteNote( {{.Id}} )"><img src="img/trash-24.png" alt="delete note"></span>
+                            </div>
                         {{ end }}
 
                     </div>
@@ -94,7 +94,7 @@
                     {{ if eq .SelectedNote "" }}
                         <p>Wherever your fingers take you...</p>
                     {{ else }}
-                        {{ .SelectedNote }}
+                        {{ .SelectedNote  }}
                     {{ end }}
                 </div>
 

@@ -11,7 +11,7 @@ type Note struct {
 }
 
 type NoteState struct {
-	Id      string `json:"noteId"`
+	Id      int64  `json:"noteId"`
 	Content string `json:"content"`
 }
 

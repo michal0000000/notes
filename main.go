@@ -2,6 +2,8 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
+	"html/template"
 	"log"
 	utils "notes/src"
 	"os"
@@ -43,9 +45,6 @@ func main() {
 	db, err := sql.Open("sqlite3", "./notes.db")
 	defer db.Close()
 	utils.CheckErr("Failed to initialize DB", err)
-
-	// Initilize notes array
-	allNotes := make(map[int64]utils.Note, 10)
 
 	// Save current note content
 	app.Put("/save", func(c *fiber.Ctx) error {
@@ -90,17 +89,24 @@ func main() {
 	app.Use(redirect.New(redirect.Config{
 		// TODO: doesnt work
 		Rules: map[string]string{
-			"/": "/:noteId",
+			"/": "/" + utils.FetchYoungestNote(db),
 		},
 		StatusCode: 301,
 	}))
 
 	app.Get("/:noteId", func(c *fiber.Ctx) error {
 
+		fmt.Printf("Wawa: %s", utils.FetchYoungestNote(db))
+
+		// Initilize notes array
+		allNotes := make(map[int64]utils.Note, 10)
+		utils.FetchNotes(db, allNotes, 10)
+
 		// Fetch first 10 Notes
 		utils.FetchNotes(db, allNotes, 10)
 
 		// Fetch content of selected noteId
+		fmt.Println(c.Params("noteId"))
 		noteId, err := strconv.ParseInt(c.Params("noteId"), 10, 64)
 		if err != nil {
 			utils.CheckErr("invalid nodeId", err)
@@ -114,33 +120,39 @@ func main() {
 		}
 
 		// rendering the "index" template with content passing
+		htmlNote := template.HTML(selectedNote)
 		return c.Render("index", fiber.Map{
 			"AllNotes":     allNotes,
-			"SelectedNote": selectedNote,
+			"SelectedNote": htmlNote,
 		})
 	})
 
 	// Endpoint for DELETE method
-	app.Delete("/delete", func(c *fiber.Ctx) error {
-		c.Accepts("application/json")
+	app.Post("/:noteid/delete", func(c *fiber.Ctx) error {
+
+		noteId := c.Params("noteId")
 
 		// Parse current note state from request data
-		noteToDelete := new(utils.NoteState)
+		/*noteToDelete := new(utils.NoteState)
 		err := c.BodyParser(noteToDelete)
 		utils.CheckErr("could not parse note to delete", err)
 		if err != nil {
 			return c.JSON(fiber.Map{
 				"message": "failed to delete note",
 			})
-		}
+		}*/
 
-		utils.DeleteNote(db, noteToDelete)
+		// Remove from DB
+		//utils.DeleteNote(db, noteToDelete)
+		utils.DeleteNoteStr(db, noteId)
+
+		//return c.Redirect("/")
 
 		return c.JSON(fiber.Map{
-			"message": "success",
+			"message": "ok",
 		})
 	})
 
 	// Start server on port 3000
-	app.Listen("192.168.1.4:3000")
+	app.Listen(":3000")
 }
