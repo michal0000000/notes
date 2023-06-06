@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"html/template"
 	"log"
 	utils "notes/src"
@@ -96,8 +95,6 @@ func main() {
 
 	app.Get("/:noteId", func(c *fiber.Ctx) error {
 
-		fmt.Printf("Wawa: %s", utils.FetchYoungestNote(db))
-
 		// Initilize notes array
 		allNotes := make(map[int64]utils.Note, 10)
 		utils.FetchNotes(db, allNotes, 10)
@@ -106,7 +103,6 @@ func main() {
 		utils.FetchNotes(db, allNotes, 10)
 
 		// Fetch content of selected noteId
-		fmt.Println(c.Params("noteId"))
 		noteId, err := strconv.ParseInt(c.Params("noteId"), 10, 64)
 		if err != nil {
 			utils.CheckErr("invalid nodeId", err)
@@ -131,19 +127,24 @@ func main() {
 	app.Post("/:noteid/delete", func(c *fiber.Ctx) error {
 
 		noteId := c.Params("noteId")
+		noteIdInt, _ := strconv.ParseInt(noteId, 10, 64)
 
 		// Parse current note state from request data
-		/*noteToDelete := new(utils.NoteState)
-		err := c.BodyParser(noteToDelete)
+		currentNoteId := new(utils.NoteState)
+		err := c.BodyParser(currentNoteId)
 		utils.CheckErr("could not parse note to delete", err)
 		if err != nil {
 			return c.JSON(fiber.Map{
 				"message": "failed to delete note",
 			})
-		}*/
+		}
+
+		//Check if currentNoteId is same as the one scheduled for deletion
+		if noteIdInt == currentNoteId.Id {
+			return c.Redirect("/" + utils.FetchYoungestNote(db))
+		}
 
 		// Remove from DB
-		//utils.DeleteNote(db, noteToDelete)
 		utils.DeleteNoteStr(db, noteId)
 
 		//return c.Redirect("/")

@@ -41,14 +41,21 @@ func FetchYoungestNote(db *sql.DB) string {
 	defer rows.Close()
 
 	var youngestId *string
+
+	count := 0
 	for rows.Next() {
 		err := rows.Scan(&youngestId)
 		if err != nil {
 			CheckErr("failed to scan note", err)
 			return "0"
 		}
+		count += 1
 	}
-	fmt.Printf("PreWawa: %s", *youngestId)
+
+	if count < 2 {
+		return "0"
+	}
+
 	return *youngestId
 }
 
@@ -73,26 +80,6 @@ func UpdateNote(db *sql.DB, noteState *NoteState) error {
 	affected, _ := res.RowsAffected()
 	fmt.Printf("SAVED! %d\n", affected)
 	return nil
-}
-
-// Delete note
-func DeleteNote(db *sql.DB, noteState *NoteState) error {
-
-	// Prepare query
-	stmt, err := db.Prepare("DELETE FROM notes WHERE id=?")
-	if err != nil {
-		CheckErr("Couldnt delete note (1)", err)
-		return err
-	}
-
-	// Execute query
-	_, err = stmt.Exec(noteState.Id)
-	if err != nil {
-		CheckErr("Couldnt delete note (2)", err)
-		return err
-	}
-
-	return err
 }
 
 // Delete note

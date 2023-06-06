@@ -104,8 +104,10 @@ function createNewNote() {
         note_id.classList.add('note-id')
 
         /* TODO: add trashbin and new note link */
+        const newNoteLink = document.createElement("a")
+        newNoteLink.href = data['Id']
         const trash_span = document.createElement("span")
-        trash_span.onclick(deleteNote(data['Id']))
+        trash_span.setAttribute('onclick',"deleteNote(" + data['Id'] + ")")
         const trash_img = document.createElement("img")
         trash_img.src = "img/trash-24.png"
         trash_img.alt = "delete note"
@@ -118,9 +120,10 @@ function createNewNote() {
         note_id.hidden = true
 
         // Build element
-        note_wrapper.appendChild(new_note)
+        newNoteLink.appendChild(new_note)
+        newNoteLink.appendChild(note_id)
+        note_wrapper.appendChild(newNoteLink)
         note_wrapper.appendChild(trash_span)
-        note_wrapper.appendChild(note_id)
         notes_list = document.getElementsByClassName('notes-list')
 
         // Insert on top of notes list
@@ -146,8 +149,6 @@ function saveNoteState() {
     const noteId = parseNoteIdFromUrl(currentUrl)
     const data = JSON.stringify({noteId: parseInt(noteId), content: editorContent});
 
-    console.log("SAVING DATA: " + data)
-
     fetch('/save', {
         method: 'PUT',
         headers: {
@@ -162,18 +163,21 @@ function saveNoteState() {
 function deleteNote(noteId) {
     // TODO: Remove note from note list
 
-    //const currentUrl = window.location.href;
-    //noteId = parseNoteIdFromUrl(currentUrl);
-    const data = JSON.stringify({noteId: noteId, content: ''});
+    const currentUrl = window.location.href;
+    currentNoteId = parseNoteIdFromUrl(currentUrl);
+    const data = JSON.stringify({noteId: parseInt(currentNoteId,10), content: ''});
     fetch('/' + noteId + '/delete', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        //body: data,
+        body: data,
     })
     .then((response) => response.json())
     .then((data) => {
+
+        deleteSingeNoteListItem(noteId)
+
         console.log('Deletion Success:', data);
 
         if (data['message'] == 'ok'){
@@ -183,3 +187,14 @@ function deleteNote(noteId) {
         console.error('Deletion Error:', error);
     });
 }
+
+function deleteSingeNoteListItem(noteId) {
+    var parentElements = document.querySelectorAll('.browser-file-item');
+    parentElements.forEach(function(parentElement) {
+      var childElement = parentElement.querySelector('a[href="' + noteId + '"]');
+      if (childElement) {
+        parentElement.remove();
+      }
+    });
+  }
+  
