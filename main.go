@@ -11,7 +11,6 @@ import (
 	"github.com/gofiber/template/html"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/redirect"
 )
 
 func init() {
@@ -85,13 +84,18 @@ func main() {
 	})
 
 	// Redirect root to some specific note
-	app.Use(redirect.New(redirect.Config{
+	/*app.Use(redirect.New(redirect.Config{
 		// TODO: doesnt work
 		Rules: map[string]string{
 			"/": "/" + utils.FetchYoungestNote(db),
 		},
 		StatusCode: 301,
-	}))
+	}))*/
+
+	app.Get("/", func(c *fiber.Ctx) error {
+		youngest := utils.FetchYoungestNote(db)
+		return c.Redirect("/" + youngest)
+	})
 
 	app.Get("/:noteId", func(c *fiber.Ctx) error {
 
@@ -127,7 +131,6 @@ func main() {
 	app.Post("/:noteid/delete", func(c *fiber.Ctx) error {
 
 		noteId := c.Params("noteId")
-		noteIdInt, _ := strconv.ParseInt(noteId, 10, 64)
 
 		// Parse current note state from request data
 		currentNoteId := new(utils.NoteState)
@@ -140,9 +143,10 @@ func main() {
 		}
 
 		//Check if currentNoteId is same as the one scheduled for deletion
-		if noteIdInt == currentNoteId.Id {
-			return c.Redirect("/" + utils.FetchYoungestNote(db))
-		}
+		//noteIdInt, _ := strconv.ParseInt(noteId, 10, 64)
+		//if noteIdInt == currentNoteId.Id {
+		//	return c.Redirect("/" + utils.FetchYoungestNote(db))
+		//}
 
 		// Remove from DB
 		utils.DeleteNoteStr(db, noteId)

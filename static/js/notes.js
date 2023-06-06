@@ -164,8 +164,8 @@ function deleteNote(noteId) {
     // TODO: Remove note from note list
 
     const currentUrl = window.location.href;
-    currentNoteId = parseNoteIdFromUrl(currentUrl);
-    const data = JSON.stringify({noteId: parseInt(currentNoteId,10), content: ''});
+    currentNoteId = parseInt(parseNoteIdFromUrl(currentUrl),10);
+    const data = JSON.stringify({noteId: currentNoteId, content: ''});
     fetch('/' + noteId + '/delete', {
         method: 'POST',
         headers: {
@@ -175,6 +175,10 @@ function deleteNote(noteId) {
     })
     .then((response) => response.json())
     .then((data) => {
+
+        if (currentNoteId == noteId){
+            window.location.replace('/')
+        }
 
         deleteSingeNoteListItem(noteId)
 

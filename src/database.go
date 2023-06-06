@@ -32,27 +32,13 @@ func CreateNewNote(db *sql.DB, title string) (int64, error) {
 	return noteID, err
 }
 
+// TODO: Not working
 func FetchYoungestNote(db *sql.DB) string {
-	rows, err := db.Query("SELECT MAX(id) FROM notes LIMIT 1")
-	if err != nil {
-		CheckErr("failed to fetch notes", err)
-		return "0"
-	}
-	defer rows.Close()
-
 	var youngestId *string
 
-	count := 0
-	for rows.Next() {
-		err := rows.Scan(&youngestId)
-		if err != nil {
-			CheckErr("failed to scan note", err)
-			return "0"
-		}
-		count += 1
-	}
-
-	if count < 2 {
+	err := db.QueryRow("SELECT MAX(id) FROM notes;").Scan(&youngestId)
+	if err != nil {
+		CheckErr("failed to fetch notes", err)
 		return "0"
 	}
 
